@@ -15,9 +15,10 @@ for url in "$@"; do
     # Fetch README page
     echo "Fetching: $url"
     curl -sL "$url" \
-    | grep -oE '<img src="https?://camo.githubusercontent.com/[^"]+' \
-    | sed -e 's/<img src="//' \
-    | while read url; do
+    | sed -n '/<script type="application\/json" data-target="react-partial.embeddedData">/,/<\/script>/p' \
+    | sed 's/\\u003e/>/g; s/\\u002F/\//g; s/\\u0022/"/g; s/\\//g' \
+    | grep -oE 'https?://camo.githubusercontent.com/[^"]+' \
+    | while read -r url; do
 
         # Purge resources
         echo "Purging: $url"
