@@ -2,16 +2,37 @@
 
 Clear GitHub image caches on README
 
-## Installing
+## Installation
+
+### <a href="https://mise.jdx.dev/"><img src="https://mise.jdx.dev/logo.svg" height="28" alt=""></a> Using [mise](https://mise.jdx.dev/) (macOS/Linux)
+
+**Recommended.** hub-purge is a single bash script, so mise installs it straight from this repository through the [`http` backend](https://mise.jdx.dev/dev-tools/backends/http.html). Add it to your `mise.toml`:
+
+```toml
+[tools]
+"http:hub-purge" = { version = "1.0.0", url = "https://raw.githubusercontent.com/mpyw/hub-purge/v{{ version }}/hub-purge" }
+```
+
+```bash
+mise install
+hub-purge mpyw/hub-purge
+```
+
+The `http` backend has no version index to query — the version is whatever the URL resolves to — so pin it to a tag rather than to `master`, and upgrades stay deliberate.
+
+<details>
+<summary>Installing manually with curl</summary>
 
 ```bash
 (
     cd /tmp \
-    && curl -LO https://raw.githubusercontent.com/mpyw/hub-purge/master/hub-purge.sh \
-    && chmod +x hub-purge.sh \
-    && mv hub-purge.sh /usr/local/bin/hub-purge
+    && curl -LO https://raw.githubusercontent.com/mpyw/hub-purge/master/hub-purge \
+    && chmod +x hub-purge \
+    && mv hub-purge /usr/local/bin/hub-purge
 )
 ```
+
+</details>
 
 ## Example Usage
 
