@@ -2,30 +2,56 @@
 
 # Validate arguments
 if [ $# -lt 1 ]; then
-    >&2 echo "Usage: $0 <username/repo_name | full_url> ...\n"
+    >&2 echo "Usage: $0 <username/repo_name | full_url> ..."
     exit 1
 fi
 
 # Iterate over arguments
+pids=()
 for url in "$@"; do
 
     # Generate GitHub repository URL
-    url=`sed -e 's@^[A-Za-z0-9-][A-Za-z0-9-]*/[A-Za-z0-9-][A-Za-z0-9-]*$@https://github.com/&@' <<< "$url"`
+    url=$(sed -e 's@^[A-Za-z0-9-][A-Za-z0-9-]*/[A-Za-z0-9-][A-Za-z0-9-]*$@https://github.com/&@' <<< "$url")
 
-    # Fetch README page
     echo "Fetching: $url"
-    curl -sL "$url" \
-    | sed -n '/<script type="application\/json" data-target="react-partial.embeddedData">/,/<\/script>/p' \
-    | sed 's/\\u003e/>/g; s/\\u002F/\//g; s/\\u0022/"/g; s/\\//g' \
-    | grep -oE 'https?://camo.githubusercontent.com/[^"]+' \
-    | while read -r url; do
 
-        # Purge resources
-        echo "Purging: $url"
-        curl -sX PURGE "$url" >/dev/null &
+    (
+        # Collect the proxied images out of the server-rendered README.
+        #
+        # Only `src="…"` attributes count. A bare search for camo URLs also
+        # matches ones quoted as text in the README body (this project's own
+        # README is full of them), and those matches run past the URL into the
+        # surrounding markup because there is no closing quote to stop at.
+        images=$(curl -sL "$url" \
+        | grep -oE 'src="https?://camo\.githubusercontent\.com/[^"]+"' \
+        | sed 's/^src="//; s/"$//' \
+        | sort -u)
 
-    done &
+        if [ -z "$images" ]; then
+            >&2 echo "No proxied images found: $url"
+            exit 1
+        fi
+
+        while read -r image; do
+
+            # Purge resources
+            echo "Purging: $image"
+            curl -sX PURGE "$image" >/dev/null &
+
+        done <<< "$images"
+
+        # Wait for this page's purges
+        wait
+    ) &
+    pids+=($!)
+
 done
 
-# Wait all jobs done
-wait
+# Wait all jobs done, and report a page that yielded nothing as a failure
+# rather than exiting 0 with no purges — that is how this script silently
+# stopped working when GitHub last changed its markup.
+status=0
+for pid in "${pids[@]}"; do
+    wait "$pid" || status=1
+done
+exit "$status"
