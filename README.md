@@ -10,7 +10,6 @@ Clear GitHub image caches on README
 
 ```bash
 mise use -g "http:hub-purge[url=https://raw.githubusercontent.com/mpyw/hub-purge/v{{ version }}/hub-purge]@1.0.0"
-hub-purge mpyw/hub-purge
 ```
 
 Or pin it per project in `mise.toml`:
