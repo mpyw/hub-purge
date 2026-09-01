@@ -9,14 +9,14 @@ Clear GitHub image caches on README
 **Recommended.** hub-purge is a single bash script, so mise installs it straight from this repository through the [`http` backend](https://mise.jdx.dev/dev-tools/backends/http.html):
 
 ```bash
-mise use -g "http:hub-purge[url=https://raw.githubusercontent.com/mpyw/hub-purge/v{{ version }}/hub-purge]@1.0.0"
+mise use -g "http:hub-purge[url=https://raw.githubusercontent.com/mpyw/hub-purge/v{{ version }}/hub-purge]@1.0.1"
 ```
 
 Or pin it per project in `mise.toml`:
 
 ```toml
 [tools]
-"http:hub-purge" = { version = "1.0.0", url = "https://raw.githubusercontent.com/mpyw/hub-purge/v{{ version }}/hub-purge" }
+"http:hub-purge" = { version = "1.0.1", url = "https://raw.githubusercontent.com/mpyw/hub-purge/v{{ version }}/hub-purge" }
 ```
 
 The `http` backend has no version index to query — the version is whatever the URL resolves to — so pin it to a tag rather than to `master`, and upgrades stay deliberate.
